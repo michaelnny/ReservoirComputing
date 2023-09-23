@@ -5,35 +5,34 @@ from esn import ESN
 from data_generator import generate_lorenz_data
 
 
-def predict_yz_on_x():
+def predict_yztp1_on_xt():
     """Train on Lorenz System component X to predict components Y, Z"""
     data = generate_lorenz_data()  # [10000, 3]
 
+    esn = ESN(num_inputs=1, num_outputs=2, num_resv_nodes=400, leak_rate=0.75)
+
+    # train the model, give x_t to predict y_tp1, z_tp1
     train_size = 6000
-    eval_size = 2000
-
-    # train on x, predict y, z
     train_input = data[:train_size, 0:1]  # keep dimension
-    train_target = data[:train_size, 1:]
+    train_target = data[1 : train_size + 1, 1:]
+    _lambda = 0.2
+    esn.train(train_input, train_target, _lambda)
 
+    # evaluate the model, give x_t to predict y_tp1, z_tp1
+    eval_size = 2000
     eval_input = data[train_size : train_size + eval_size, 0:1]  # keep dimension
-    eval_target = data[train_size : train_size + eval_size, 1:]
+    eval_target = data[train_size + 1 : train_size + 1 + eval_size, 1:]
 
-    esn = ESN(num_inputs=1, num_outputs=2, num_resv_nodes=400, leak_rate=0.5, output_bias=0)
-
-    esn.train(train_input, train_target)
-
-    # give X, predict Y, Z
     pred_target, mse = esn.predict(eval_input, eval_target)
 
-    T = range(len(pred_target))
-
+    # plot evaluation results
     fig, axes = plt.subplots(1, 3, figsize=(16, 9))
     fig.tight_layout(pad=4)
     fig.subplots_adjust(top=0.9)
-
-    plt.suptitle(f"Lorenz Prediction of Y, Z on X (Reservoir nodes = {esn.num_resv_nodes}, Leak rate = {esn.leak_rate})")
-
+    plt.suptitle(
+        f"Lorenz Prediction of Y, Z on X (Reservoir nodes={esn.num_resv_nodes}, Leak rate={esn.leak_rate}, Lambda={_lambda})"
+    )
+    T = range(len(pred_target))
     labels = ['Y', 'Z']
     for i, label in enumerate(labels):
         ax = axes[i]
@@ -42,12 +41,12 @@ def predict_yz_on_x():
         ax.set_xlabel("t")
         ax.set_ylabel(f"{label}")
         ax.legend(loc="upper right")
-        ax.set_title(f"Lorenz {label}, MSE = {mse[i]:.6f}")
+        ax.set_title(f"Lorenz {label}, MSE={mse[i]:.6f}")
 
     # Make the third subplot a 3D plot
     ax_3d = fig.add_subplot(133, projection='3d')
-    ax_3d.plot(eval_input, eval_target[:, 0:1], eval_target[:, 1:2], label='Actual')
-    ax_3d.plot(eval_input, pred_target[:, 0:1], pred_target[:, 1:2], label='Predicted', linestyle='--')
+    ax_3d.plot(eval_input[1:], eval_target[:-1, 0:1], eval_target[:-1, 1:2], label='Actual')
+    ax_3d.plot(eval_input[1:], pred_target[:-1, 0:1], pred_target[:-1, 1:2], label='Predicted', linestyle='--')
     ax_3d.set_title('Lorenz System - 3D Plot')
     ax_3d.set_xlabel('X')
     ax_3d.set_ylabel('Y')
@@ -57,38 +56,34 @@ def predict_yz_on_x():
     plt.show()
 
 
-def predict_x_on_x():
+def predict_xtp1_on_xt():
+    """Train on Lorenz System component X to continuously predict components X autonomously"""
     data = generate_lorenz_data()  # [10000, 3]
 
-    train_size = 6000
-    eval_size = 1000
+    esn = ESN(num_inputs=1, num_outputs=1, num_resv_nodes=670, leak_rate=0.75)
 
-    # train on x_t, predict x_t+1
+    # train the model, give x_t to predict x_t+1
+    train_size = 6000
     train_input = data[:train_size, 0:1]  # keep dimension
     train_target = data[1 : train_size + 1, 0:1]
+    _lambda = 0.2
+    esn.train(train_input, train_target, _lambda)
 
+    # evaluate the model, give x_t to predict x_t+1, t+2, ..., t+n autonomously
+    eval_size = 200
+    burnin = 100
     eval_input = data[train_size : train_size + eval_size, 0:1]  # keep dimension
+    eval_target = data[train_size + 1 : train_size + eval_size + 1, 0:1]  # keep dimension
 
-    esn = ESN(
-        num_inputs=1,
-        num_outputs=1,
-        num_resv_nodes=400,
-        leak_rate=0.25,
-    )
+    pred_target, mse = esn.predict_autonomous(eval_input, eval_target, burnin)
 
-    esn.train(train_input, train_target)
-
-    # give a sequence of x_t, predict x_t+1, t+2, ..., t+n autonomously
-    burnin = 500
-    pred_target, mse = esn.predict_autonomous(eval_input, burnin)
-
-    T = range(len(pred_target))
-
+    # plot evaluation results
     fig = plt.figure(figsize=(16, 9))
-
-    plt.suptitle(f"Lorenz Autonomous Prediction of X (Reservoir nodes = {esn.num_resv_nodes}, Leak rate = {esn.leak_rate})")
-
-    plt.plot(T, eval_input[:, 0], label="Actual")
+    plt.suptitle(
+        f"Lorenz Autonomous Prediction of X (Reservoir nodes={esn.num_resv_nodes}, Leak rate={esn.leak_rate}, Lambda={_lambda}, MSE={mse[0]:.6f})"
+    )
+    T = range(len(pred_target))
+    plt.plot(T, eval_target[:, 0], label="Actual")
     plt.plot(T, pred_target[:, 0], label="Predicted", linestyle='--')
 
     # Plot a vertical line indicate start of Autonomous Prediction
@@ -103,14 +98,12 @@ def predict_x_on_x():
     plt.xlabel("t")
     plt.ylabel('X')
     plt.legend(loc="upper right")
-    plt.title(f"Lorenz X, MSE = {mse[0]:.6f}")
-
     plt.show()
 
 
 if __name__ == '__main__':
     np.random.seed(31)
 
-    predict_yz_on_x()
+    predict_yztp1_on_xt()
 
-    predict_x_on_x()
+    predict_xtp1_on_xt()
