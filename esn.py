@@ -63,7 +63,7 @@ class ReservoirLayer:
 
         self.init_weights()
 
-    def init_weights(self):
+    def init_weights(self) -> None:
         weights = np.random.normal(0, 1, self.num_nodes * self.num_nodes).reshape([self.num_nodes, self.num_nodes])
         # spectral_radius, if self.spectral_radius is 0, compute it dynamically
         if self.spectral_radius <= 0:
@@ -93,16 +93,16 @@ class ESN:
     ) -> None:
         """
 
-        Args:
-            num_inputs (int): number of unites for the input layer
-            num_outputs (int): number of unites for the output layer
-            num_resv_nodes (int): number of reservoir nodes
-            leak_rate (float): the leaky rate for reservoir layer
+        Parameters:
+            num_inputs (int): number of unites for the input layer.
+            num_outputs (int): number of unites for the output layer.
+            num_resv_nodes (int): number of reservoir nodes.
+            leak_rate (float): the leaky rate for reservoir layer.
             spectral_radius (float): spectral radius for reservoir layer,
-                if spectral_radius=0, will compute it dynamically
-            activation (callable): activation function for reservoir nodes
-            input_bias (float): bias for input layer (default 1.0)
-            output_bias (float): bias for output layer (default 0.0)
+                if spectral_radius=0, will compute it dynamically.
+            activation (callable): activation function for reservoir nodes.
+            input_bias (float): bias for input layer (default 1.0).
+            output_bias (float): bias for output layer (default 0.0).
         """
 
         assert 0 < num_inputs
@@ -139,14 +139,14 @@ class ESN:
     ) -> None:
         """
         Train the model by run through the input data and collecting reservoir states,
-        then update the weights of the output layer
+        then update the weights of the output layer.
 
-        Args:
+        Parameters:
             train_input (np.ndarray): input data shape of [sequence_len, N],
-                where N is the number of features we feed to the input layer
+                where N is the number of features we feed to the input layer.
             train_target (np.ndarray): target data shape of [sequence_len, M],
-                where M is the number of features we want the model to predict
-            _lambda (float): lambda for the Ridge Regression (default 0.1)
+                where M is the number of features we want the model to predict.
+            _lambda (float, optional): lambda for the Ridge Regression (default 0.1).
         """
 
         assert len(train_input) == len(train_target)
@@ -185,12 +185,16 @@ class ESN:
         """
         Use the trained model to perform prediction
 
-        Args:
-            input_data (np.ndarray): input data shape of [sequence_len, N],
+        Parameters:
+            input_data (numpy.ndarray): input data shape of [sequence_len, N],
                 where N is the number of features we feed to the input layer
-            true_target (np.ndarray): target data shape of [sequence_len, M],
+            true_target (numpy.ndarray): target data shape of [sequence_len, M],
                 where M is the number of features we want the model to predict
-            _lambda (float): lambda for the Ridge Regression (default 0.1)
+
+        Returns:
+            tuple:
+                pred_target (numpy.ndarray): a 2D numpy.ndarray with shape of [sequence_len, M] contains the predicted values
+                mse (numpy.ndarray): a 1D numpy.ndarray with shape of [M] contains the MSE for each predicted dimension
         """
         assert len(input_data) == len(true_target)
         assert len(input_data.shape) == len(true_target.shape) == 2
@@ -212,22 +216,28 @@ class ESN:
         assert pred_target.shape == true_target.shape
 
         # compute MSE
-        squared_diff = (pred_target - true_target) ** 2
+        # skip first step as we're using dummy reservoir state
+        squared_diff = (pred_target[1:] - true_target[1:]) ** 2
         mse = np.mean(squared_diff, axis=0)
 
         return pred_target, mse
 
     def predict_autonomous(self, input_data: np.ndarray, true_target: np.ndarray, burnin: int = 1) -> Tuple[np.ndarray, float]:
         """
-        Use the trained model to perform autonomous prediction
+        Use the trained model to perform autonomous prediction.
 
         Args:
-            input_data (np.ndarray): input data shape of [sequence_len, N],
-                where N is the number of features we feed to the input layer
-            true_target (np.ndarray): target data shape of [sequence_len, N],
-                where N is the number of features we want the model to predict
-            burnin (int): number of timesteps we use data from input_data,
-                instead of use self-predicted as input to the model (default 1)
+            input_data (numpy.ndarray): input data shape of [sequence_len, N],
+                where N is the number of features we feed to the input layer.
+            true_target (numpy.ndarray): target data shape of [sequence_len, N],
+                where N is the number of features we want the model to predict.
+            burnin (int, optional): number of timesteps we use data from input_data,
+                instead of use self-predicted as input to the model (default 1).
+
+        Returns:
+            tuple:
+                pred_target (numpy.ndarray): a 2D numpy.ndarray with shape of [sequence_len, M] contains the predicted values.
+                mse (numpy.ndarray): a 1D numpy.ndarray with shape of [M] contains the MSE for each predicted dimension.
         """
 
         assert len(input_data.shape) == len(true_target.shape) == 2

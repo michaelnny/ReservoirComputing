@@ -60,7 +60,6 @@ def main():
     ax2.set_xlabel('X')
     ax2.set_ylabel('Y')
     ax2.set_zlabel('Z')
-
     plt.show()
 
     # evaluate the model on autonomous prediction

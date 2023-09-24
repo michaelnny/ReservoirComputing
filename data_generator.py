@@ -45,15 +45,16 @@ def generate_henon_map_data(iterations=10000) -> np.ndarray:
 
 # code adapted from:
 # https://github.com/manu-mannattil/nolitsa/blob/master/nolitsa/data.py
-def generate_mackey_glass_data(length=10000, x0=None, a=0.2, b=0.1, c=10.0, tau=23.0, n=1000, sample=0.46, discard=250) -> np.ndarray:
+def generate_mackey_glass_data(
+    length=10000, x0=None, a=0.2, b=0.1, c=10.0, tau=23.0, n=1000, sample=0.46, discard=250
+) -> np.ndarray:
     """Generate time series using the Mackey-Glass equation.
 
     Generates time series using the discrete approximation of the
     Mackey-Glass delay differential equation described by Grassberger &
     Procaccia (1983).
 
-    Parameters
-    ----------
+    Parameters:
     length : int, optional (default = 10000)
         Length of the time series to be generated.
     x0 : array, optional (default = random)
@@ -98,7 +99,56 @@ def generate_mackey_glass_data(length=10000, x0=None, a=0.2, b=0.1, c=10.0, tau=
 
     for i in range(n - 1, grids - 1):
         x[i + 1] = A * x[i] + B * (x[i - n] / (1 + x[i - n] ** c) + x[i - n + 1] / (1 + x[i - n + 1] ** c))
-    return x[n * discard :: sample]
+    data = x[n * discard :: sample]
+
+    return np.expand_dims(data, 1)  # [10000, 1]
+
+
+def generate_stock_price_random_walk(
+    num_days: int = 1000, initial_price: float = 100, drift: float = 0.0, volatility: float = 0.2
+) -> np.ndarray:
+    """
+    Generate synthetic stock price data using random walk.
+
+    Parameters:
+        num_days (int): number of days (default 1000)
+        initial_price (float): initial stock price (default 100)
+        drift (float): drift or average daily return (default 0)
+        volatility (float): volatility or standard deviation of daily returns (default 0.2)
+
+    Returns:
+        price (numpy.ndarray): a 2D numpy.ndarray with shape of [num_days, 1] contains price data over num_days
+    """
+
+    # Generate synthetic stock price data
+    daily_returns = np.random.normal(drift / num_days, volatility / np.sqrt(num_days), num_days)
+    price = initial_price * np.exp(np.cumsum(daily_returns))
+
+    return np.expand_dims(price, 1)  # [num_days, 1]
+
+
+def generate_stock_price_gbm(num_days=1000, initial_price=100, mu=0.1, sigma=0.2, dt=1 / 252) -> np.ndarray:
+    """
+    Generate synthetic stock price data using GBM
+
+    Parameters:
+        num_days (int): number of days (default 1000)
+        initial_price (float): initial stock price (default 100)
+        mu (float): annual drift or average return (default 0.1)
+        sigma (float): annual volatility or standard deviation of return (default 0.2)
+        dt (float): time step (assuming trading 252 days a year) (default 1 / 252)
+
+    Returns:
+        price (numpy.ndarray): a 2D numpy.ndarray with shape of [num_days, 1] contains price data over num_days
+    """
+
+    price = [initial_price]
+    for _ in range(num_days - 1):
+        drift = (mu - 0.5 * sigma**2) * dt
+        diffusion = sigma * np.sqrt(dt) * np.random.normal(0, 1)
+        price.append(price[-1] * np.exp(drift + diffusion))
+
+    return np.expand_dims(price, 1)  # [num_days, 1]
 
 
 if __name__ == "__main__":

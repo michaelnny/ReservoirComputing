@@ -35,6 +35,19 @@ Case 2: Given x_t, y_t, continue to predict x, y at t+1, t+2, ..., t+n autonomou
 ![Henon Map - Autonomous prediction](/images/HenonMap_2.png)
 
 
+
+# Stock Price Prediction
+
+Case 1: Given price at timestep t, predict price as timestep t+1, all using synthetic stock price
+
+![Synthetic Stock Price - Prediction plot](/images/RandomStock_1.png)
+
+
+Case 1: Given open, high, low, and close prices at time step t, predict open, high, low, and close prices at time step t+1, using SPY historical price data
+
+![SPY Stock Price - Prediction plot](/images/SPY_1.png)
+
+
 # License
 This project is licensed under the MIT License, see the LICENSE file for details
 
