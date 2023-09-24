@@ -11,14 +11,14 @@ def main():
 
     esn = ESN(num_inputs=2, num_outputs=2, num_resv_nodes=400, leak_rate=1)
 
-    # train the model, give x_t, y_t to predict x_t+1, y_t+1
+    # train the model, given x, y components at time step t, predict the x, y components at time step t+1.
     train_size = 5000
     train_input = data[:train_size, :]
     train_target = data[1 : train_size + 1, :]
     _lambda = 0.2
     esn.train(train_input, train_target, _lambda)
 
-    # evaluate the model, give x_t to predict y_tp1
+    # evaluate the model, given x, y components at time step t, predict the x, y components at time step t+1.
     eval_size = 500
     eval_input = data[train_size : train_size + eval_size, :]
     eval_target = data[train_size + 1 : train_size + 1 + eval_size, :]
@@ -43,6 +43,7 @@ def main():
     plt.show()
 
     # evaluate the model on autonomous prediction
+    # given x, y components at time step t, predict x, y components at time step t+1 t+1, t+2, ..., t+n autonomously.
     burnin = 400
     auto_pred_target, mse = esn.predict_autonomous(eval_input, eval_target, burnin)
 

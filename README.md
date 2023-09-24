@@ -12,25 +12,25 @@ Implementing Reservoir Computing Networks for Predicting Dynamic Systems
 
 # Lorenz System Prediction
 
-Case 1: Given x_t, y_t, z_t, predict the corresponding x_t+1, y_t+1, z_t+1 components.
+Case 1: Given x, y, z components at time step t, predict the x, y, z components at time step t+1.
 
 ![Lorenz System - Prediction plot](/images/Lorenz_1.png)
 
 ![Lorenz System - Prediction 3D plot](/images/Lorenz_2.png)
 
-Case 2: Given x_t, y_t, z_t, continue to predict x, y, z at t+1, t+2, ..., t+n autonomously.
+Case 2: Given x, y, z components at time step t, predict x, y, z components at time step t+1 t+1, t+2, ..., t+n autonomously.
 
 ![Lorenz System - Autonomous prediction](/images/Lorenz_3.png)
 
 
 # Henon Map Prediction
 
-Case 1: Given x_t, y_t, z_t, predict the corresponding x_t+1, y_t+1 components.
+Case 1: Given x, y components at time step t, predict the x, y components at time step t+1.
 
 ![Henon Map - Prediction plot](/images/HenonMap_1.png)
 
 
-Case 2: Given x_t, y_t, continue to predict x, y at t+1, t+2, ..., t+n autonomously.
+Case 2: Given x, y components at time step t, predict x, y components at time step t+1 t+1, t+2, ..., t+n autonomously.
 
 ![Henon Map - Autonomous prediction](/images/HenonMap_2.png)
 
@@ -38,12 +38,12 @@ Case 2: Given x_t, y_t, continue to predict x, y at t+1, t+2, ..., t+n autonomou
 
 # Stock Price Prediction
 
-Case 1: Given price at timestep t, predict price as timestep t+1, all using synthetic stock price
+Case 1: Given price at time step t, predict price as time step t+1, all using synthetic stock price data
 
 ![Synthetic Stock Price - Prediction plot](/images/RandomStock_1.png)
 
 
-Case 1: Given open, high, low, and close prices at time step t, predict open, high, low, and close prices at time step t+1, using SPY historical price data
+Case 2: Given open, high, low, and close prices at time step t, predict open, high, low, and close prices at time step t+1, using SPY historical price data
 
 ![SPY Stock Price - Prediction plot](/images/SPY_1.png)
 

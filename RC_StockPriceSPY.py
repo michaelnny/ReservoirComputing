@@ -22,14 +22,14 @@ def main(data: np.ndarray, scale: float = 100):
 
     esn = ESN(num_inputs=4, num_outputs=4, num_resv_nodes=500, leak_rate=0.3)
 
-    # train the model, give open, high, low, and close prices at time step t, predict open, high, low, and close prices at time step t+1
+    # train the model, given open, high, low, and close prices at time step t, predict open, high, low, and close prices at time step t+1
     train_size = int(len(data) * 0.7)
     train_input = data[:train_size, :]
     train_target = data[1 : train_size + 1, :]
     _lambda = 0.1
     esn.train(train_input, train_target, _lambda)
 
-    # evaluate the model, give open, high, low, and close prices at time step t, predict open, high, low, and close prices at time step t+1
+    # evaluate the model, given open, high, low, and close prices at time step t, predict open, high, low, and close prices at time step t+1
     eval_size = len(data) - train_size - 1
     eval_input = data[train_size : train_size + eval_size, :]
     eval_target = data[train_size + 1 : train_size + 1 + eval_size, :]
@@ -54,6 +54,7 @@ def main(data: np.ndarray, scale: float = 100):
     plt.show()
 
     # evaluate the model on autonomous prediction
+    # given open, high, low, and close prices at time step t, predict open, high, low, and close prices at time step t+1 t+1, t+2, ..., t+n autonomously.
     burnin = int(eval_size * 0.8)
     auto_pred_target, mse = esn.predict_autonomous(eval_input, eval_target, burnin)
 

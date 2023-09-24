@@ -16,14 +16,14 @@ def main():
 
     esn = ESN(num_inputs=1, num_outputs=1, num_resv_nodes=200, leak_rate=0.3)
 
-    # train the model, give x_t to predict x_t+1
+    # train the model, given price at time step t, predict price as time step t+1
     train_size = 4000
     train_input = data[:train_size, :]
     train_target = data[1 : train_size + 1, :]
     _lambda = 0.1
     esn.train(train_input, train_target, _lambda)
 
-    # evaluate the model, give x_t to predict x_tp1
+    # evaluate the model, given price at time step t, predict price as time step t+1
     eval_size = 500
     eval_input = data[train_size : train_size + eval_size, :]
     eval_target = data[train_size + 1 : train_size + 1 + eval_size, :]
@@ -45,6 +45,7 @@ def main():
     plt.show()
 
     # evaluate the model on autonomous prediction
+    # given price at time step t, predict price at time step t+1 t+1, t+2, ..., t+n autonomously.
     burnin = 250
     auto_pred_target, mse = esn.predict_autonomous(eval_input, eval_target, burnin)
 
